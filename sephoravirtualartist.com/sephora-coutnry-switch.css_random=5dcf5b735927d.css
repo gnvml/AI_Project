@@ -1,0 +1,78 @@
+
+.Footer-locale {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+.Footer-locale a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    outline: 0;
+    background-color: transparent
+}
+.Footer-locale a:active,
+.Footer-locale a:hover {
+    outline: 0
+}
+.Footer-locale img {
+    vertical-align: middle;
+    border: 0
+}
+.Footer-localeLink {
+    color: #666;
+    display: inline-block
+}
+.Footer-localeLink img {
+    opacity: .4;
+    width: 18px;;
+    height: auto;
+    position: relative;
+    top: -.0625em;
+    margin-right: .375em
+}
+.Footer-localeLink--active,
+.no-touch .Footer-localeLink:hover,
+.touch .Footer-localeLink:active {
+    color: #000;
+    text-decoration: underline
+}
+.Footer-localeLink--active img,
+.no-touch .Footer-localeLink:hover img,
+.touch .Footer-localeLink:active img {
+    opacity: 1
+}
+.Footer-localeLink--active {
+    cursor: default;
+    font-weight: 700
+}
+.Footer-localeCtry {
+    display: inline-block
+}
+.Footer-localeLang {
+    display: none
+}
+.Footer-localeLang .Footer-localeLink:first-child {
+    margin-left: 8px;
+}
+.Footer-localeCtry:hover .Footer-localeLink {
+    color: #000
+}
+.Footer-localeCtry:hover .icon {
+    opacity: 1
+}
+.no-touch .Footer-localeCtry:hover .Footer-localeLang {
+    display: inline
+}
+.u-ml1 {
+    margin-left: 5px;
+}
+.u-mr1 {
+    margin-right: 5px;
+}
+
+
+
+

@@ -1,0 +1,16 @@
+.app {
+    position: relative;
+    display: inline-flex;
+}
+
+.app div {
+    display: inline-flex;
+}
+
+.app .main-content {
+    border: 1px solid red;
+}
+
+.kill {
+    background-color: rgba(88, 85, 85, 0.075);
+}

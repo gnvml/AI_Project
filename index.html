@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI - Project</title>
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset=utf-8 />
+    <style>
+        .app {
+            display: inline-block;
+        }
+        
+        .top-pannel {
+            width: 100%;
+            background-color: rgba(225, 232, 238, 0.445);
+            display: inline-block;
+        }
+        
+        .top-pannel>button {
+            text-align: -webkit-center;
+            width: 100%;
+            background-color: #6db17b71;
+            border-radius: 1px;
+            border: 1px solid #adacac85;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            text-decoration: none;
+            text-shadow: 0px 1px 0px #2f6627;
+            color: rgb(0, 0, 0);
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 200;
+            line-height: 40px;
+        }
+        
+        .top-pannel>button:hover {
+            background-color: #5cbf2a;
+        }
+        
+        .top-pannel>button:active {
+            position: relative;
+            top: 1px;
+        }
+        
+        .main-content {
+            position: absolute;
+        }
+        
+        .rows {
+            display: inline-block;
+        }
+        
+        .rows div {
+            display: inline-block;
+        }
+        
+        .main-content canvas {
+            border: 1px solid #ccc;
+        }
+        
+        .main-content img {
+            display: none;
+        }
+        
+        .main-color {
+            position: fixed;
+            top: 1px;
+            right: 1px;
+            width: 300px;
+            height: 200px;
+            border: 1px solid #ccc;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .cxx {
+            width: 42px;
+            height: 42px;
+            margin: 1.5px;
+            border: 1px solid aquamarine;
+            box-sizing: border-box;
+        }
+    </style>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script>
+        //from sephoravirtualartist.com
+        var imageProperty = {
+            width: 0,
+            height: 0
+        }
+        var stateDraw = {
+            isStart: false,
+            listPoints: []
+        }
+        var rectCanvas = {
+            top: 0,
+            left: 0
+        }
+
+        function readURL(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file, img;
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    $('#imgRender').attr('src', e.target.result);
+                    $('#imgRender').css('display', 'inline');
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+            if ((file = input.files[0])) {
+                img = new Image();
+                img.onload = function() {
+                    imageProperty.width = this.width;
+                    imageProperty.height = this.height;
+                };
+                img.onerror = function() {
+                    alert("not a valid file: " + file.type);
+                };
+                img.src = _URL.createObjectURL(file);
+            }
+
+            $('.main-content #imgRender').css('display', 'inline');
+            $('.main-content canvas').css('display', 'none');
+        }
+
+        function renders(type) {
+            var img = document.querySelector('.main-content img');
+            var canvas = document.querySelector('.main-content canvas');
+
+            $('.main-content #imgRender').css('display', 'none');
+            $('.main-content canvas').css('display', 'inline');
+
+            canvas.width = imageProperty.width;
+            canvas.height = imageProperty.height;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+            if (type == 'remove-list')
+                stateDraw.listPoints = [];
+            $('.main-content').css('width', imageProperty.width + 'px');
+            console.log(`Done render Canvas : width ${imageProperty.width} - height ${imageProperty.height}`)
+
+            var rect = canvas.getBoundingClientRect();
+            rectCanvas.top = rect.top;
+            rectCanvas.left = rect.left;
+
+        }
+
+        function startTakeCircle() {
+            stateDraw.isStart = true;
+
+        }
+
+        function stopTakeCircle() {
+            stateDraw.isStart = false;
+
+            stateDraw.listPoints.forEach(element => {
+                console.log(element)
+            });
+
+            var data = [...stateDraw.listPoints];
+            fillColor(data, 'rgba(88, 85, 85, 0.275)');
+        }
+
+        function fillColor(data, color) {
+            renders();
+
+            var canvas = document.querySelector('.main-content canvas');
+            var ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.moveTo(data[0].x, data[0].y);
+            var length = data.length;
+            for (var i = 1; i < length - 1; i++) {
+                ctx.lineTo(data[i].x, data[i].y);
+            }
+            ctx.lineTo(data[length - 1].x, data[length - 1].y);
+
+            ctx.closePath();
+            //ctx.fillStyle = 'rgba(225, 232, 238, 0.445)';
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function fillFromHTML(color) {
+            var data = [...stateDraw.listPoints];
+            fillColor(data, color);
+        }
+
+        function drawOnePoint(x, y, r) {
+            var canvas = document.querySelector('.main-content canvas');
+            var ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            stateDraw.listPoints.push({
+                x,
+                y,
+                r
+            });
+        }
+        window.onload = function() {
+
+            //take from https://stackoverflow.com/questions/9880472/determine-distance-from-the-top-of-a-div-to-top-of-window-with-javascript
+            // and https://stackoverflow.com/questions/9880279/how-do-i-add-a-simple-onclick-event-handler-to-a-canvas-element
+            var elem = document.getElementById('myCanvas'),
+                elemLeft = elem.offsetLeft,
+                //elemTop = elem.offsetTop + elem.getBoundingClientRect().top,
+                elemTop = elem.offsetTop + elem.scrollTop,
+                context = elem.getContext('2d'),
+                elements = [];
+
+            // Add event listener for `click` events.
+            elem.addEventListener('click', function(event) {
+                var x = event.pageX - rectCanvas.left;
+                y = event.pageY - rectCanvas.top;
+                console.log(`Page: ${event.pageX} - ${event.pageY} | Real: ${x} - ${y}`)
+                if (stateDraw.isStart)
+                    drawOnePoint(x, y, 2);
+            }, false);
+
+            // $('.main-content').css('left', window.screen.availWidth / 2 + 'px');
+            var ob = document.querySelector('.top-pannel').getBoundingClientRect();
+            document.querySelector('.main-content').style.left = ob.width * 1.1 + 'px';
+            document.querySelector('.main-content').style.top = '0px';
+        }
+
+        function renderCXX() {
+            var arrayCXX = document.getElementsByClassName('cxx')
+            for (var i = 0; i < arrayCXX.length; i++) {
+                arrayCXX[i].setAttribute("Color", arrayCXX[i].style.backgroundColor)
+                arrayCXX[i].setAttribute("key", i)
+                console.log("Color: " + arrayCXX[i].style.backgroundColor)
+            }
+
+            console.log('=====================>');
+            stateDraw.listPoints.forEach(element => {
+                console.log(element);
+            });
+        }
+
+        function clickCXX(element) {
+            var color = element.style.backgroundColor;
+            fillFromHTML(color);
+            console.log("Color: " + color);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="app">
+
+        <div class="top-pannel">
+            <input type="file" id="inputUpload" accept="image/*" name="files[]" onChange="readURL(this);">
+            <button onclick="renders('remove-list')">Render</button>
+
+            <button onclick="startTakeCircle()">Start</button>
+            <button onclick="stopTakeCircle()">Stop</button>
+            <button onclick="renderCXX()">CXX</button>
+        </div>
+        <div style="width: 100%;"></div>
+        <div class="rows">
+            <div class="main-content">
+                <img id="imgRender" alt="" width="100%" height="100%" style="border: 1px solid #ccc" />
+                <canvas id="myCanvas"></canvas>
+            </div>
+            <div class="main-color">
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(127, 255, 212, 0.534);"></div>
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(78, 189, 27, 0.521);"></div>
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(255, 0, 76, 0.582);"></div>
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(247, 0, 255, 0.541);"></div>
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(238, 255, 0, 0.575);"></div>
+                <div onclick="clickCXX(this);" class="cxx" style="background-color: rgba(0, 0, 0, 0.377);"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+
+</html>
