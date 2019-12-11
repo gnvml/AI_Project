@@ -8,8 +8,10 @@
     },
     "devDependencies": {},
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node index.js"
+        
+        "test": "python run.py",
+        "start": "node index.js",
+        "leuleu": "echo HAHA"
     },
     "repository": {
         "type": "git",

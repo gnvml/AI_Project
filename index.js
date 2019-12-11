@@ -1,59 +1,90 @@
 var http = require('http');
+const path = require("path");
 var fs = require('fs');
-var path = require('path');
+const multer = require("multer");
+var execSync = require('child_process').execSync;
+const express = require("express");
 
-var server = http.createServer(function(req, res) {
-    //var real = './sephoravirtualartist.com' + req.url;
-    console.log(`${req.method} request for ${req.url}`);
+const app = express();
+const httpServer = http.createServer(app);
 
-    if (req.url === '/') {
-        fs.readFile('./index.html', "UTF-8", function(err, html) {
-            res.writeHead(200, { "Content-Type": "text/html" });
-            res.end(html);
-        });
-    } else if (req.url.match('css')) {
-        fs.readFile(req.url, "UTF-8", function(err, html) {
-            res.writeHead(200, { "Content-Type": "text/css" });
-            res.end(html);
-        });
-    } else if (req.url.match('png')) {
-        fs.readFile(req.url, "UTF-8", function(err, html) {
-            res.writeHead(200, { "Content-Type": "image/png" });
-            res.end(html);
-        });
-    } else {
-        fs.readFile(req.url, "UTF-8", function(err, html) {
-            res.writeHead(200, { "Content-Type": "text/html" });
-            res.end(html);
-        });
-    }
+const PORT = process.env.PORT || 8080;
 
-    //show image in page
-    //to display image
-    if (req.url == "/img/logo.png") {
-        console.log(`Request image in page ${req.url}`)
-        var img = fs.readFileSync('./img/logo.png');
-        res.writeHead(200, { 'Content-Type': 'image/png' });
-        res.end(img, 'binary');
-
-        return;
-
-    }
-    //for request favicon
-    if (req.url.match("/requestFavicon" || req.url.match("/logo"))) {
-        console.log('Request for favicon');
-
-        var img = fs.readFileSync('img/favicon.png');
-        res.writeHead(200, { 'Content-Type': 'image/x-icon' });
-        res.end(img, 'binary');
-
-        //var icoPath = path.join(__dirname, 'public', req.url);
-        //var fileStream = fs.createReadStream(icoPath, "base64");
-        //res.writeHead(200, {"Content-Type": "image/x-icon"});
-        //fileStream.pipe(res);
-    }
+httpServer.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
-server.listen(8080, function() {
-    console.log("Connect Success!!!")
-    console.log("Server run in 8080 port")
+
+const upload = multer({
+    dest: "./UPLOAD",
+    // you might also want to set some limits: https://github.com/expressjs/multer#limits
 });
+
+app.get("/", function(req, res){
+    fs.readFile('./index.html', "UTF-8", function(err, html) {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(html);
+    });
+})
+app.get("/run", function(req, res){
+    var cmd = "python ai_model.py";
+
+    var options = {
+        encoding: 'utf8'
+    };
+
+    console.log(execSync(cmd, options));
+    sleep(5000)
+    fs.readFile('./OUTPUT/out.txt', "utf8", function(err, txt) {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(txt);
+    });
+})
+
+const handleError = (err, res) => {
+    res
+      .status(500)
+      .contentType("text/plain")
+      .end("Oops! Something went wrong!");
+};
+
+app.post(
+    "/uploadImage",
+    upload.single("photo" /* name attribute of <file> element in your form */),
+    (req, res) => {
+      const tempPath = req.file.path;
+      const targetPath = path.join(__dirname, "./UPLOAD/upload.jpg");
+  
+      //if (path.extname(req.file.originalname).toLowerCase() === ".png") {
+      if(true){
+        fs.rename(tempPath, targetPath, err => {
+          if (err) return handleError(err, res);
+  
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end();
+
+          //res.end();
+            //.status(200)
+            //.contentType("text/plain")
+            //.end("File uploaded!");
+        });
+      } else {
+        fs.unlink(tempPath, err => {
+          if (err) return handleError(err, res);
+  
+          res
+            .status(403)
+            .contentType("text/plain")
+            .end("Only .png files are allowed!");
+        });
+      }
+    }
+);
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds) {
+            break;
+        }
+    }
+}

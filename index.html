@@ -110,6 +110,8 @@
                 reader.onload = function(e) {
                     $('#imgRender').attr('src', e.target.result);
                     $('#imgRender').css('display', 'inline');
+
+                    ren();
                 };
 
                 reader.readAsDataURL(input.files[0]);
@@ -117,20 +119,50 @@
             if ((file = input.files[0])) {
                 img = new Image();
                 img.onload = function() {
-                    imageProperty.width = this.width;
-                    imageProperty.height = this.height;
+                    //imageProperty.width *= 0.25; //640
+                    //imageProperty.height *= 0.25; //480
+
+                    //imageProperty.width = this.width;
+                    //imageProperty.height = this.height;
                 };
                 img.onerror = function() {
                     alert("not a valid file: " + file.type);
                 };
                 img.src = _URL.createObjectURL(file);
+
+
             }
 
             $('.main-content #imgRender').css('display', 'inline');
             $('.main-content canvas').css('display', 'none');
+
+
         }
 
-        function renders(type) {
+        function ren() {
+            var img = document.querySelector('.main-content img');
+            var canvas = document.createElement('canvas')
+
+            var a = new Image();
+            a.src = img.src;
+            a.onload = function() {
+                console.log(a.naturalWidth + " " + a.naturalHeight)
+
+                canvas.width = a.naturalWidth * 0.25;
+                canvas.height = a.naturalHeight * 0.25;
+
+                canvas.getContext('2d').drawImage(img, 0, 0);
+
+                //dataUrl is base64 for png image.
+                let dataUrl = canvas.toDataURL('img/png');
+                //img.src = dataUrl;
+                var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
+            }
+
+            renders();
+        }
+
+        function renderss(type) {
             var img = document.querySelector('.main-content img');
             var canvas = document.querySelector('.main-content canvas');
 
@@ -151,39 +183,171 @@
 
         }
 
-        function startTakeCircle() {
-            stateDraw.isStart = true;
+        function renders() {
+            var img = document.querySelector('.main-content img');
+            var canvas = document.createElement('canvas')
 
+            var a = new Image();
+            a.src = img.src;
+            a.onload = function() {
+                console.log(a.naturalWidth + " " + a.naturalHeight)
+
+                canvas.width = a.naturalWidth * 0.25;
+                canvas.height = a.naturalHeight * 0.25;
+
+                canvas.getContext('2d').drawImage(img, 0, 0);
+
+                //dataUrl is base64 for png image.
+                let dataUrl = canvas.toDataURL('img/png');
+                //img.src = dataUrl;
+                var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
+            }
         }
 
-        function stopTakeCircle() {
-            stateDraw.isStart = false;
+        function saveImage() {
+            var img = document.querySelector('.main-content img');
+            var canvas = document.createElement('canvas')
 
-            stateDraw.listPoints.forEach(element => {
-                console.log(element)
-            });
+            var a = new Image();
+            a.src = img.src;
+            a.onload = function() {
+                console.log(a.naturalWidth + " " + a.naturalHeight)
 
-            var data = [...stateDraw.listPoints];
-            fillColor(data, 'rgba(88, 85, 85, 0.275)');
+                canvas.width = a.naturalWidth * 0.25;
+                canvas.height = a.naturalHeight * 0.25;
+
+                canvas.getContext('2d').drawImage(img, 0, 0);
+
+                //dataUrl is base64 for png image.
+                let dataUrl = canvas.toDataURL('img/png');
+                //img.src = dataUrl;
+                var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
+            }
+
+            var ajaxRequest; // Khai bao mot bien
+            try {
+
+                // Voi cac trinh duyet hien dai: Opera 8.0+, Firefox, Safari
+                ajaxRequest = new XMLHttpRequest();
+            } catch (e) {
+
+                // Voi trinh duyet IE
+                try {
+                    ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (e) {
+
+                    try {
+                        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+                    } catch (e) {
+
+                        // Thong bao khi xay ra loi
+                        alert("Co loi xay ra voi trinh duyet cua ban!");
+                        return false;
+                    }
+                }
+            }
+
+            // Tao mot ham de nhan du lieu duoc gui tu Server
+            // va sau do se update the div trong page
+            ajaxRequest.onreadystatechange = function() {
+
+                if (ajaxRequest.readyState == 4) {
+                    //
+                    var results = [];
+                    var html = ajaxRequest.responseText;
+                    html = html.split(',')
+
+                    html.pop();
+                    for (var i = 0; i < html.length; i += 2) {
+                        var f1 = parseFloat(html[i])
+                        var f2 = parseFloat(html[i + 1])
+
+                        var arr = [f1, f2]
+                        results.push([...arr])
+
+                        var r = 2
+                        var x = f1,
+                            y = f2;
+                        var canvas = document.querySelector('.main-content canvas');
+                        var ctx = canvas.getContext("2d");
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, 2 * Math.PI);
+                        ctx.stroke();
+
+                        stateDraw.listPoints.push({
+                            x,
+                            y,
+                            r
+                        });
+                    }
+                    console.log(stateDraw.listPoints)
+                    fillColor(stateDraw.listPoints, 'rgba(88, 85, 85, 0.275)');
+                }
+            }
+
+            // Bay gio, lay gia tri da nhap tu user va truyen no toi server script
+            var img = document.querySelector('.main-content img');
+            ajaxRequest.open("GET", "/run", true);
+            ajaxRequest.send(null);
         }
+
 
         function fillColor(data, color) {
             renders();
 
             var canvas = document.querySelector('.main-content canvas');
             var ctx = canvas.getContext('2d');
+
+
             ctx.beginPath();
             ctx.moveTo(data[0].x, data[0].y);
             var length = data.length;
-            for (var i = 1; i < length - 1; i++) {
+            for (var i = 1; i < 7; i++) {
                 ctx.lineTo(data[i].x, data[i].y);
             }
-            ctx.lineTo(data[length - 1].x, data[length - 1].y);
+            ctx.lineTo(data[16].x, data[16].y);
+            for (var i = 15; i > 11; i--) {
+                ctx.lineTo(data[i].x, data[i].y);
+            }
+            ctx.lineTo(data[0].x, data[0].y);
 
             ctx.closePath();
             //ctx.fillStyle = 'rgba(225, 232, 238, 0.445)';
+
             ctx.fillStyle = color;
+
             ctx.fill();
+            //ctx.stroke();
+
+
+            //----------------------------------
+
+            ctx.beginPath();
+            ctx.moveTo(data[0].x, data[0].y);
+            ctx.lineTo(data[12].x, data[12].y);
+            ctx.lineTo(data[19].x, data[19].y);
+            for (var i = 17; i > 15; i--) {
+                ctx.lineTo(data[i].x, data[i].y);
+            }
+            ctx.lineTo(data[6].x, data[6].y);
+            for (var i = 7; i < 12; i++) {
+                ctx.lineTo(data[i].x, data[i].y);
+            }
+            ctx.lineTo(data[0].x, data[0].y);
+
+            ctx.closePath();
+            //ctx.fillStyle = 'rgba(225, 232, 238, 0.445)';
+
+            ctx.fillStyle = color;
+
+            ctx.fill();
+            //ctx.stroke();
+
+            /*
+            stateDraw.listPoints.forEach(e => {
+                showPoint(e.x, e.y)
+            });
+            */
         }
 
         function fillFromHTML(color) {
@@ -203,6 +367,14 @@
                 y,
                 r
             });
+        }
+
+        function showPoint(x, y, r = 1) {
+            var canvas = document.querySelector('.main-content canvas');
+            var ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.stroke();
         }
         window.onload = function() {
 
@@ -256,12 +428,16 @@
     <div class="app">
 
         <div class="top-pannel">
-            <input type="file" id="inputUpload" accept="image/*" name="files[]" onChange="readURL(this);">
-            <button onclick="renders('remove-list')">Render</button>
+            <form action="/uploadImage" method="post" enctype="multipart/form-data">
+                <input id="inputUpload" type="file" accept="image/*" name="photo" onChange="readURL(this);">
+                <input type="submit" value="Upload">
+            </form>
+            <!--<button onclick="renders('remove-list')">Render</button>-->
 
-            <button onclick="startTakeCircle()">Start</button>
-            <button onclick="stopTakeCircle()">Stop</button>
-            <button onclick="renderCXX()">CXX</button>
+            <!--<button onclick="startTakeCircle()">Start</button>-->
+            <!--<button onclick="stopTakeCircle()">Stop</button>-->
+            <!--<button onclick="renderCXX()">CXX</button> -->
+            <button onclick="saveImage()">Run</button>
         </div>
         <div style="width: 100%;"></div>
         <div class="rows">
