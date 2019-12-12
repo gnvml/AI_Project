@@ -11,7 +11,7 @@ const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 8080;
 
 httpServer.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+    console.log(`Server is listening on port ${PORT}`);
 });
 
 const upload = multer({
@@ -19,13 +19,14 @@ const upload = multer({
     // you might also want to set some limits: https://github.com/expressjs/multer#limits
 });
 
-app.get("/", function(req, res){
+app.get("/", function(req, res) {
     fs.readFile('./index.html', "UTF-8", function(err, html) {
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(html);
     });
 })
-app.get("/run", function(req, res){
+app.get("/run", function(req, res) {
+
     var cmd = "python ai_model.py";
 
     var options = {
@@ -34,49 +35,52 @@ app.get("/run", function(req, res){
 
     console.log(execSync(cmd, options));
     sleep(5000)
+
     fs.readFile('./OUTPUT/out.txt', "utf8", function(err, txt) {
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(txt);
     });
-})
 
+})
 const handleError = (err, res) => {
     res
-      .status(500)
-      .contentType("text/plain")
-      .end("Oops! Something went wrong!");
+        .status(500)
+        .contentType("text/plain")
+        .end("Oops! Something went wrong!");
 };
 
 app.post(
     "/uploadImage",
-    upload.single("photo" /* name attribute of <file> element in your form */),
+    upload.single("photo" /* name attribute of <file> element in your form */ ),
     (req, res) => {
-      const tempPath = req.file.path;
-      const targetPath = path.join(__dirname, "./UPLOAD/upload.jpg");
-  
-      //if (path.extname(req.file.originalname).toLowerCase() === ".png") {
-      if(true){
-        fs.rename(tempPath, targetPath, err => {
-          if (err) return handleError(err, res);
-  
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end();
+        const tempPath = req.file.path;
+        const targetPath = path.join(__dirname, "./UPLOAD/upload.jpg");
 
-          //res.end();
-            //.status(200)
-            //.contentType("text/plain")
-            //.end("File uploaded!");
-        });
-      } else {
-        fs.unlink(tempPath, err => {
-          if (err) return handleError(err, res);
-  
-          res
-            .status(403)
-            .contentType("text/plain")
-            .end("Only .png files are allowed!");
-        });
-      }
+        //if (path.extname(req.file.originalname).toLowerCase() === ".png") {
+        if (true) {
+            fs.rename(tempPath, targetPath, err => {
+                if (err) return handleError(err, res);
+
+                /*
+                res.writeHead(200, { "Content-Type": "text/html" });
+                res.end();
+
+                //res.end();
+                //.status(200)
+                //.contentType("text/plain")
+                //.end("File uploaded!");
+                */
+            });
+        } else {
+            fs.unlink(tempPath, err => {
+                if (err) return handleError(err, res);
+
+                res
+                    .status(403)
+                    .contentType("text/plain")
+                    .end("Only .png files are allowed!");
+            });
+        }
     }
 );
 

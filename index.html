@@ -111,7 +111,7 @@
                     $('#imgRender').attr('src', e.target.result);
                     $('#imgRender').css('display', 'inline');
 
-                    ren();
+                    renders();
                 };
 
                 reader.readAsDataURL(input.files[0]);
@@ -139,72 +139,35 @@
 
         }
 
-        function ren() {
-            var img = document.querySelector('.main-content img');
-            var canvas = document.createElement('canvas')
+        function renders(type) {
+            if (!type) {
+                var img = document.querySelector('.main-content img');
+                var canvas = document.querySelector('.main-content canvas');
 
-            var a = new Image();
-            a.src = img.src;
-            a.onload = function() {
-                console.log(a.naturalWidth + " " + a.naturalHeight)
+                $('.main-content #imgRender').css('display', 'none');
+                $('.main-content canvas').css('display', 'inline');
 
-                canvas.width = a.naturalWidth * 0.25;
-                canvas.height = a.naturalHeight * 0.25;
+                var a = new Image();
+                a.src = img.src;
+                a.onload = function() {
+                    canvas.width = a.naturalWidth * 0.25;
+                    canvas.height = a.naturalHeight * 0.25;
 
-                canvas.getContext('2d').drawImage(img, 0, 0);
+                    canvas.getContext('2d').drawImage(img, 0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25);
 
-                //dataUrl is base64 for png image.
-                let dataUrl = canvas.toDataURL('img/png');
-                //img.src = dataUrl;
-                var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
-            }
+                    $('.main-content').css('width', a.naturalWidth * 0.25 + 'px');
 
-            renders();
-        }
+                    console.log(`Done render Canvas : width ${a.naturalWidth} - height ${a.naturalHeight}`)
 
-        function renderss(type) {
-            var img = document.querySelector('.main-content img');
-            var canvas = document.querySelector('.main-content canvas');
-
-            $('.main-content #imgRender').css('display', 'none');
-            $('.main-content canvas').css('display', 'inline');
-
-            canvas.width = imageProperty.width;
-            canvas.height = imageProperty.height;
-            canvas.getContext('2d').drawImage(img, 0, 0);
-            if (type == 'remove-list')
-                stateDraw.listPoints = [];
-            $('.main-content').css('width', imageProperty.width + 'px');
-            console.log(`Done render Canvas : width ${imageProperty.width} - height ${imageProperty.height}`)
-
-            var rect = canvas.getBoundingClientRect();
-            rectCanvas.top = rect.top;
-            rectCanvas.left = rect.left;
-
-        }
-
-        function renders() {
-            var img = document.querySelector('.main-content img');
-            var canvas = document.createElement('canvas')
-
-            var a = new Image();
-            a.src = img.src;
-            a.onload = function() {
-                console.log(a.naturalWidth + " " + a.naturalHeight)
-
-                canvas.width = a.naturalWidth * 0.25;
-                canvas.height = a.naturalHeight * 0.25;
-
-                canvas.getContext('2d').drawImage(img, 0, 0);
-
-                //dataUrl is base64 for png image.
-                let dataUrl = canvas.toDataURL('img/png');
-                //img.src = dataUrl;
-                var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
+                    var rect = canvas.getBoundingClientRect();
+                    rectCanvas.top = rect.top;
+                    rectCanvas.left = rect.left;
+                }
             }
         }
 
         function saveImage() {
+            /*
             var img = document.querySelector('.main-content img');
             var canvas = document.createElement('canvas')
 
@@ -216,14 +179,14 @@
                 canvas.width = a.naturalWidth * 0.25;
                 canvas.height = a.naturalHeight * 0.25;
 
-                canvas.getContext('2d').drawImage(img, 0, 0);
+                canvas.getContext('2d').drawImage(img, 0, 0, a.naturalWidth, a.naturalHeight);
 
                 //dataUrl is base64 for png image.
                 let dataUrl = canvas.toDataURL('img/png');
                 //img.src = dataUrl;
                 var imgData = canvas.getContext('2d').getImageData(0, 0, a.naturalWidth * 0.25, a.naturalHeight * 0.25).data;
             }
-
+*/
             var ajaxRequest; // Khai bao mot bien
             try {
 
@@ -292,8 +255,8 @@
         }
 
 
-        function fillColor(data, color) {
-            renders();
+        function fillColor(data, color, type) {
+            renders(type);
 
             var canvas = document.querySelector('.main-content canvas');
             var ctx = canvas.getContext('2d');
@@ -352,7 +315,7 @@
 
         function fillFromHTML(color) {
             var data = [...stateDraw.listPoints];
-            fillColor(data, color);
+            fillColor(data, color, 'no-first');
         }
 
         function drawOnePoint(x, y, r) {
